@@ -1,0 +1,19 @@
+ul.item-list {
+  list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+li.item {
+  min-height: 100px;
+  padding: 0 10px;
+  display: flex;
+  gap: 10px;
+  justify-content: start;
+  align-items: center;
+}
+
+li.item:nth-child(even) {
+  background-color: #070707;
+}
