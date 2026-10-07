@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import Item from "./Item";
 
-const limit = 5;
-
-const SearchBar = () => {
+const SearchBar = ({ size = 5 }) => {
   const [query, setQuery] = useState("");
   const [data, setData] = useState([]);
   const [skip, setSkip] = useState(0);
@@ -13,7 +11,7 @@ const SearchBar = () => {
 
   const handleSearch = (skipCount = 0) => {
     fetch(
-      `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${limit}&skip=${skipCount}`,
+      `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${size}&skip=${skipCount}`,
     )
       .then((response) => response.json())
       .then((json) => setData(json.products || []));
@@ -49,7 +47,7 @@ const SearchBar = () => {
       <div className="page-button-container">
         <button
           onClick={() => {
-            const newSkip = skip - 5;
+            const newSkip = skip - size;
             setSkip(newSkip);
             handleSearch(newSkip);
           }}
@@ -59,11 +57,11 @@ const SearchBar = () => {
         </button>
         <button
           onClick={() => {
-            const newSkip = skip + 5;
+            const newSkip = skip + size;
             setSkip(newSkip);
             handleSearch(newSkip);
           }}
-          disabled={data.length < 5}
+          disabled={data.length < size}
         >
           Next
         </button>
