@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import Item from "./Item";
 
@@ -11,8 +11,19 @@ const SearchBar = ({ pageSize = 5 }) => {
   const [error, setError] = useState(null);
 
   const debouncedQuery = useDebounce(query);
+  const cacheRef = useRef(new Map());
 
   useEffect(() => {
+    const trimmedQuery = debouncedQuery.trim();
+    const cacheKey = `${trimmedQuery}_${pageSize}_${offset}`;
+
+    if (cacheRef.current.has(cacheKey)) {
+      const json = cacheRef.current.get(cacheKey);
+      setData(json.products || []);
+      setTotal(json.total);
+      return;
+    }
+
     const controller = new AbortController();
     const { signal } = controller;
 
@@ -34,6 +45,7 @@ const SearchBar = ({ pageSize = 5 }) => {
         setLoading(false);
         setData(json.products || []);
         setTotal(json.total);
+        cacheRef.current.set(cacheKey, json);
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
