@@ -57,6 +57,8 @@ const SearchBar = ({ pageSize = 5 }) => {
 
     return () => {
       controller.abort();
+      setLoading(false);
+      setError(null);
     };
   }, [debouncedQuery, pageSize, offset]);
 
