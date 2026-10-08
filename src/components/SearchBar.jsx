@@ -6,6 +6,7 @@ const SearchBar = ({ pageSize = 5 }) => {
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -32,6 +33,7 @@ const SearchBar = ({ pageSize = 5 }) => {
       .then((json) => {
         setLoading(false);
         setData(json.products || []);
+        setTotal(json.total);
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
@@ -66,10 +68,12 @@ const SearchBar = ({ pageSize = 5 }) => {
         {data.length === 0 && <li>No results</li>}
       </ul>
 
-      <div style={{ minHeight: "40px" }}>
+      <div style={{ minHeight: "30px" }}>
         <div>{loading && "Loading..."}</div>
         <div>{error && "Something went wrong."}</div>
       </div>
+
+      <div style={{ fontSize: ".75rem" }}>Total: {total}</div>
 
       <div className="page-button-container">
         <button
@@ -84,7 +88,7 @@ const SearchBar = ({ pageSize = 5 }) => {
           onClick={() => {
             setOffset(offset + pageSize);
           }}
-          disabled={data.length < pageSize}
+          disabled={total - offset <= pageSize}
         >
           Next
         </button>
