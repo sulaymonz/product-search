@@ -2,28 +2,20 @@ import { useState, useEffect } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import Item from "./Item";
 
-const SearchBar = ({ size = 5 }) => {
+const SearchBar = ({ pageSize = 5 }) => {
   const [query, setQuery] = useState("");
   const [data, setData] = useState([]);
-  const [skip, setSkip] = useState(0);
+  const [offset, setOffset] = useState(0);
 
   const debouncedQuery = useDebounce(query);
 
-  const handleSearch = (skipCount = 0) => {
+  useEffect(() => {
     fetch(
-      `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${size}&skip=${skipCount}`,
+      `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${pageSize}&skip=${offset}`,
     )
       .then((response) => response.json())
       .then((json) => setData(json.products || []));
-  };
-
-  useEffect(() => {
-    handleSearch();
-  }, [debouncedQuery]);
-
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
+  }, [debouncedQuery, offset]);
 
   return (
     <div style={{ marginTop: "20px" }}>
@@ -33,7 +25,7 @@ const SearchBar = ({ size = 5 }) => {
         value={query}
         placeholder="Search"
         onChange={(e) => {
-          setSkip(0);
+          setOffset(0);
           setQuery(e.target.value);
         }}
       />
@@ -42,26 +34,23 @@ const SearchBar = ({ size = 5 }) => {
         {data.map((item) => (
           <Item key={item.id} data={item} />
         ))}
+        {data.length === 0 && <li>No results</li>}
       </ul>
 
       <div className="page-button-container">
         <button
           onClick={() => {
-            const newSkip = skip - size;
-            setSkip(newSkip);
-            handleSearch(newSkip);
+            setOffset(offset - pageSize);
           }}
-          disabled={skip <= 0}
+          disabled={offset <= 0}
         >
           Prev
         </button>
         <button
           onClick={() => {
-            const newSkip = skip + size;
-            setSkip(newSkip);
-            handleSearch(newSkip);
+            setOffset(offset + pageSize);
           }}
-          disabled={data.length < size}
+          disabled={data.length < pageSize}
         >
           Next
         </button>
