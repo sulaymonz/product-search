@@ -19,7 +19,7 @@ const SearchBar = ({ pageSize = 5 }) => {
     setError(null);
 
     fetch(
-      `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${pageSize}&skip=${offset}`,
+      `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${pageSize}&skip=${offset}&select=title,description,thumbnail`,
       { signal },
     )
       .then((response) => {
