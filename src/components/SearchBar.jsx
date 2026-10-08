@@ -4,8 +4,10 @@ import Item from "./Item";
 
 const SearchBar = ({ pageSize = 5 }) => {
   const [query, setQuery] = useState("");
-  const [data, setData] = useState([]);
   const [offset, setOffset] = useState(0);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const debouncedQuery = useDebounce(query);
 
@@ -13,22 +15,36 @@ const SearchBar = ({ pageSize = 5 }) => {
     const controller = new AbortController();
     const { signal } = controller;
 
+    setLoading(true);
+    setError(null);
+
     fetch(
       `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${pageSize}&skip=${offset}`,
       { signal },
     )
-      .then((response) => response.json())
-      .then((json) => setData(json.products || []))
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error! Status: ${response.status}`);
+        } else {
+          return response.json();
+        }
+      })
+      .then((json) => {
+        setLoading(false);
+        setData(json.products || []);
+      })
       .catch((err) => {
         if (err.name !== "AbortError") {
           console.log("Fetch Error: ", err);
+          setLoading(false);
+          setError(err.message);
         }
       });
 
     return () => {
       controller.abort();
     };
-  }, [debouncedQuery, offset]);
+  }, [debouncedQuery, pageSize, offset]);
 
   return (
     <div style={{ marginTop: "20px" }}>
@@ -49,6 +65,11 @@ const SearchBar = ({ pageSize = 5 }) => {
         ))}
         {data.length === 0 && <li>No results</li>}
       </ul>
+
+      <div style={{ minHeight: "40px" }}>
+        <div>{loading && "Loading..."}</div>
+        <div>{error && "Something went wrong."}</div>
+      </div>
 
       <div className="page-button-container">
         <button
