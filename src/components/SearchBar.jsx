@@ -10,11 +10,24 @@ const SearchBar = ({ pageSize = 5 }) => {
   const debouncedQuery = useDebounce(query);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     fetch(
       `https://dummyjson.com/products/search?q=${debouncedQuery}&limit=${pageSize}&skip=${offset}`,
+      { signal },
     )
       .then((response) => response.json())
-      .then((json) => setData(json.products || []));
+      .then((json) => setData(json.products || []))
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.log("Fetch Error: ", err);
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
   }, [debouncedQuery, offset]);
 
   return (
